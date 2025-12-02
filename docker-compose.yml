@@ -1,0 +1,99 @@
+services:
+  redis:
+    image: redis
+    container_name: cs-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - cache-system
+
+  mariadb:
+    image: mariadb
+    container_name: cs-mariadb
+    environment:
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: true
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb-data:/var/lib/mariadb
+    networks:
+      - cache-system
+
+  mongo-1:
+    image: mongo
+    container_name: cs-mongo-1
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-1-data:/data/db
+    command: --replSet rs0 --bind_ip_all --port 27017
+    networks:
+      - cache-system
+
+  mongo-2:
+    image: mongo
+    container_name: cs-mongo-2
+    ports:
+      - "27018:27018"
+    volumes:
+      - mongo-2-data:/data/db
+    command: --replSet rs0 --bind_ip_all --port 27018
+    networks:
+      - cache-system
+
+  mongo-3:
+    image: mongo
+    container_name: cs-mongo-3
+    ports:
+      - "27019:27019"
+    volumes:
+      - mongo-3-data:/data/db
+    command: --replSet rs0 --bind_ip_all --port 27019
+    networks:
+      - cache-system
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper
+    container_name: cs-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2181
+    networks:
+      - cache-system
+
+  kafka:
+    image: confluentinc/cp-kafka
+    container_name: cs-kafka
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    networks:
+      - cache-system
+
+networks:
+  cache-system:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
+  mariadb-data:
+    driver: local
+  mongo-1-data:
+    driver: local
+  mongo-2-data:
+    driver: local
+  mongo-3-data:
+    driver: local
