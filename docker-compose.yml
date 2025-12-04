@@ -82,6 +82,31 @@ services:
     networks:
       - cache-system
 
+  nifi:
+    image: apache/nifi:latest
+    container_name: cs-nifi
+
+    environment:
+      SINGLE_USER_CREDENTIALS_USERNAME: admin
+      SINGLE_USER_CREDENTIALS_PASSWORD: password_1234
+      NIFI_WEB_HTTPS_PORT: 8080
+      NIFI_WEB_HTTPS_HOST: 0.0.0.0
+
+    volumes:
+      - ./database_repository:/opt/nifi/nifi-current/database_repository
+      - ./flowfile_repository:/opt/nifi/nifi-current/flowfile_repository
+      - ./content_repository:/opt/nifi/nifi-current/content_repository
+      - ./provenance_repository:/opt/nifi/nifi-current/provenance_repository
+      - ./state:/opt/nifi/nifi-current/state
+      - ./lib:/opt/nifi/nifi-current/lib
+      - ./data:/opt/nifi/nifi-current/data
+      - ./logs:/opt/nifi/nifi-current/logs
+
+    ports:
+      - "8080:8080"
+    networks:
+      - cache-system
+
 networks:
   cache-system:
     driver: bridge
