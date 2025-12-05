@@ -28,6 +28,7 @@ services:
       - "27017:27017"
     volumes:
       - mongo-1-data:/data/db
+      - ./docker/mongo/init-rs.sh:/docker-entrypoint-initdb.d/init-rs.sh:ro
     command: --replSet rs0 --bind_ip_all --port 27017
     networks:
       - cache-system
@@ -104,6 +105,77 @@ services:
 
     ports:
       - "8080:8080"
+    networks:
+      - cache-system
+
+  emp-app:
+    build:
+      context: .
+      dockerfile: ./docker/emp/Dockerfile
+    container_name: cs-emp-app
+    working_dir: /var/www/html
+    environment:
+      APP_DEBUG: true
+      APP_KEY: base64:Wf3PZp5Kx7vD1rR2mL9qT6yB8hJ4sN0aV1uXcY2eFzI=
+      DB_CONNECTION: mysql
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_DATABASE: cache_system
+      DB_USERNAME: root
+      DB_PASSWORD:
+    ports:
+      - "9001:9001"
+    command: php artisan serve --host=0.0.0.0 --port=9001
+    depends_on:
+      - mariadb
+    networks:
+      - cache-system
+
+  search-app:
+    build:
+      context: .
+      dockerfile: ./docker/search/Dockerfile
+    container_name: cs-search-app
+    working_dir: /var/www/html
+    environment:
+      APP_DEBUG: true
+      APP_KEY: base64:Wf3PZp5Kx7vD1rR2mL9qT6yB8hJ4sN0aV1uXcY2eFzI=
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: null
+      REDIS_CLIENT: phpredis
+    ports:
+      - "9002:9002"
+    command: php artisan serve --host=0.0.0.0 --port=9002
+    depends_on:
+      - redis
+    networks:
+      - cache-system
+
+  realz-app:
+    build:
+      context: .
+      dockerfile: ./docker/realz/Dockerfile
+    container_name: cs-realz-app
+    working_dir: /var/www/html
+    environment:
+      APP_DEBUG: true
+      APP_KEY: base64:Wf3PZp5Kx7vD1rR2mL9qT6yB8hJ4sN0aV1uXcY2eFzI=
+      DB_CONNECTION: mongodb
+      DB_HOST: mongo-1
+      DB_PORT: 27017
+      DB_DATABASE: cache_system
+      DB_USERNAME: ""
+      DB_PASSWORD: ""
+      BROADCAST_DRIVER: log
+      PUSHER_APP_ID: dummy
+      PUSHER_APP_KEY: dummy
+      PUSHER_APP_SECRET: dummy
+    ports:
+      - "9003:9003"
+    command: php artisan serve --host=0.0.0.0 --port=9003
+    depends_on:
+      - mongo-1
     networks:
       - cache-system
 
