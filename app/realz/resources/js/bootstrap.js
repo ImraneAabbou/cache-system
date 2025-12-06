@@ -39,8 +39,10 @@ import Pusher from 'pusher-js';
 
 window.Echo = new Echo({
     broadcaster: 'pusher',
-    key: import.meta.env.VITE_PUSHER_APP_KEY,
-    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+    key: "a17b56660b21c940dcd3",
+    cluster: "eu",
+    // key: import.meta.env.VITE_PUSHER_APP_KEY,
+    // cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
     pusher: {
         client: Pusher, // Use the Pusher client imported above
     },

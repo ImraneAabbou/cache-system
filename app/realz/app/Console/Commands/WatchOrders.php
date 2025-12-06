@@ -16,13 +16,13 @@ class WatchOrders extends Command
     public function handle()
     {
         $this->info('let s begin the hunt...');
-        $uri = 'mongodb://localhost:27017/';
+        $uri = 'mongodb://mongo-1:27017/';
         $client = new Client($uri);
-        
-        $this->info('Connected to MongoDB');
-        
 
-        $collection = $client->cache->customerOrders;
+        $this->info('Connected to MongoDB');
+
+
+        $collection = $client->cache_system->customerOrders;
         $changeStream = $collection->watch();
         $this->info('Watching for new orders...');
 
@@ -32,12 +32,12 @@ class WatchOrders extends Command
             if ( ! $changeStream->valid()) {
                 continue;
             }
-    
+
             $event = $changeStream->current();
-        
+
             $ns = sprintf('%s.%s', $event['ns']['db'], $event['ns']['coll']);
             $id = json_encode($event['documentKey']['_id']);
-        
+
             if ($event['operationType'] == 'insert') {
                     $this->info('gottya ! ');
                     echo json_encode($event['fullDocument']), "\n\n";
@@ -45,21 +45,21 @@ class WatchOrders extends Command
                     $order = new Order((array) $event['fullDocument']);
 
                     event(new NewOrder($order));
-                    sleep(5); 
+                    sleep(5);
             }
         }
 
 
-      
-       
 
-          
-                
-            
-                
-                  
 
-      
+
+
+
+
+
+
+
+
         }
     }
 
